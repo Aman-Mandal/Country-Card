@@ -220,4 +220,3 @@ const whereAmI = function (lat, lng) {
 }
 
 whereAmI(60.192059, 24.945831)
-w
