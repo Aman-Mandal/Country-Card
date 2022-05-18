@@ -183,12 +183,12 @@ const getCountryAndNeighbour = function (country) {
     })
 }
 
-btn.addEventListener('click', function () {
-  getCountryAndNeighbour('australia')
-})
+// btn.addEventListener('click', function () {
+//   getCountryAndNeighbour('australia')
+// })
 
 // ------------------------ Coding Challenge 1 ------------------------------
-
+/*
 const whereAmI = function (lat, lng) {
   // reverse-geocoding
   fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
@@ -220,3 +220,130 @@ const whereAmI = function (lat, lng) {
 }
 
 whereAmI(60.192059, 24.945831)
+*/
+
+// console.log('Test Start')
+// setTimeout(() => console.log('Timer 1'), 0)
+// Promise.resolve('Resolved promise 1').then(res => console.log(res))
+
+// Promise.resolve('promise 2').then(res => {
+//   for (let i = 0; i < 10000000; i++) {}
+//   console.log(res)
+// })
+// console.log('Test End')
+
+// --------------------------- Creating Promises ----------------------------
+
+const lotteryPromise = new Promise(function (resolve, reject) {
+  console.log('Wait for the announcement')
+  // async
+  setTimeout(function () {
+    if (Math.random() >= 0.5) {
+      resolve('You won the lottery 🎊')
+    } else {
+      reject(new Error('You lost.. Try again someday'))
+    }
+  }, 2000)
+})
+
+lotteryPromise.then(res => console.log(res)).catch(err => console.error(err))
+
+// -------------------- PROMISIFYING ------------------------
+
+const wait = function (seconds) {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, seconds * 1000)
+  })
+}
+
+// wait(5)
+//   .then(() => {
+//     console.log('I waited for 5 secs')
+//     return wait(4)
+//   })
+//   .then(() => {
+//     console.log('I waited for 3 secs')
+//     return wait(1)
+//   })
+//   .then(() => console.log('Wait for 1'))
+
+// setTimeout(() => {
+//   console.log('1 seconds passed')
+//   setTimeout(() => {
+//     console.log('2 seconds passed')
+//     setTimeout(() => {
+//       console.log('3 seconds passed')
+//       setTimeout(() => {
+//         console.log('4 seconds passed')
+//       }, 1000)
+//     }, 1000)
+//   }, 1000)
+// }, 1000)
+
+// wait(1)
+//   .then(() => {
+//     console.log('1 secs passed')
+//     return wait(2)
+//   })
+//   .then(() => {
+//     console.log('2 secs passed')
+//     return wait(3)
+//   })
+//   .then(() => {
+//     console.log('3 secs passed')
+//     return wait(4)
+//   })
+//   .then(() => {
+//     console.log('4 secs passed')
+//   })
+
+// -----------Instant Promises--------------
+
+Promise.resolve('New resolved promise').then(res => console.log(res))
+Promise.reject(new Error('Error happenend')).catch(err => console.error(err))
+
+// ----------------- Promisifying GEOLOCATION API ------------------
+
+const getPosition = function () {
+  return new Promise(function (resolve, reject) {
+    navigator.geolocation.getCurrentPosition(resolve, reject)
+  })
+}
+
+// getPosition().then(res => console.log(res))
+
+const whereAmI = function () {
+  getPosition()
+    .then(pos => {
+      const { latitude: lat, longitude: lng } = pos.coords
+      return fetch(`https://geocode.xyz/${lat},${lng}?geoit=json`)
+    })
+    // reverse-geocoding
+    .then(response => {
+      // Handling err
+      if (!response.ok) {
+        throw new Error(
+          `Can't load too many requests at the same time (${response.status})`
+        )
+      }
+      return response.json()
+    })
+    .then(data => {
+      console.log(data)
+      console.log(`You are in ${data.city}, ${data.country}`)
+
+      // country API
+      return fetch(`https://restcountries.com/v3.1/name/${data.country}`)
+    })
+    .then(response => {
+      if (!response.ok) throw new Error('Country not found')
+      return response.json()
+    })
+    // rendering data
+    .then(data => renderCountry(data[0]))
+
+    // catching err
+    .catch(err => console.error(`Oops .. Something went wrong !! ${err}`))
+}
+
+btn.addEventListener('click', whereAmI)
